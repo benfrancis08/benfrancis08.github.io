@@ -15,6 +15,7 @@ let characterY;
 let gravity;
 let currentTime = 0;
 let score = 0;
+let birdHitboxDia = 58;
 
 function preload() {
   imgBg = loadImage("images/FlappyBirdBackground.jpg");
@@ -54,22 +55,28 @@ function displayMenu() {
   textSize(30);
   text("Press SPACE or LMB to jump", width/2, height/1.5);
   dy = 0;
-  characterY = 300;
+  characterY = height/2 - imgCharacter.height/2;
   gravity = 0.5;
 }
 
 
 function playGame() {
   if (gameState === "Play") {
-    if (characterY <= 630) {
-      dy += gravity;
-      characterY += dy;
+    dy += gravity;
+    if (imgCharacter.height/2 + characterY - birdHitboxDia <= 630) {
+      if (characterY > -birdHitboxDia/2-15) {
+        characterY += dy;
+      }
+      else {
+        characterY = -birdHitboxDia/2-14;
+        dy = 0;
+      }
     }
     else {
       gameState = "End Game";
     }
     image(imgBg, 0, 0, width, height);
-    image(imgCharacter, width/2 - 75, characterY);
+    createBirdSprite();
   }
 }
 
@@ -85,14 +92,14 @@ function endGame() {
 }
 
 function jump() {
-  dy = -10;
+  dy = -8;
 }
 
 function keyPressed() {
   if (key === "r") {
     gameState = "Menu";
   }
-  if (keyCode === 32 && characterY >= 20) {
+  if (keyCode === 32) {
     jump();
   }
 }
@@ -102,7 +109,24 @@ function mouseClicked() {
   ) {
     gameState = "Play";
   }
-  if (gameState === "Play" && characterY >= 20) {
+  if (gameState === "Play") {
     jump();
   }
+}
+
+function createBirdSprite() {
+  push();
+  imageMode(CENTER);
+  translate(width/2, imgCharacter.height/2 + characterY);
+  if (dy < 0) {
+    rotate(11*PI/6);
+  }
+  else {
+    rotate(PI/6);
+  }
+  image(imgCharacter, 0, 0);
+  noStroke();
+  noFill();
+  circle(-5, 0, birdHitboxDia);
+  pop();
 }
