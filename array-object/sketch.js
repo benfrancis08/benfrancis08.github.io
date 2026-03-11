@@ -13,6 +13,8 @@ let symbolTwo;
 let symbolThree;
 let spin = false;
 let displayingSymbols = false;
+let spinTime;
+const ROLL_TIME = 3000;
 
 function preload() {
   for (let i = 0; i < symbols.length; i++) {
@@ -27,23 +29,21 @@ function setup() {
   symbolOne = floor(random(0, symbols.length));
   symbolTwo = floor(random(0, symbols.length));
   symbolThree = floor(random(0, symbols.length));
+  spinTime = millis();
+  
 }
 
 function draw() {
   background(150);
-  for (let reel of reelArray) {
-    rectMode(CENTER);
-    rect(reel.x, reel.y, reel.w, reel.h);
-  }
+  drawReels();
   displaySymbols();
-
 }
 
 function createReels() {
-  let firstReel = width/2 - symbols[0].width;
+  let firstReelX = width/2 - symbols[0].width;
   for (let i = 0; i < reelAmount; i++) {
     let theReel = {
-      x: firstReel + symbols[0].width * i-1,
+      x: firstReelX + symbols[0].width * i-1,
       y: height/2,
       w: symbols[0].width,
       h: symbols[0].height*2
@@ -52,26 +52,49 @@ function createReels() {
   }  
 }
 
-function displaySymbols() {
-  if (frameCount % 15 === 0) {
-    symbolOne = (symbolOne + 1) % symbols.length;
-    symbolTwo = (symbolTwo + 1) % symbols.length;
-    symbolThree = (symbolThree + 1) % symbols.length;
-  }
-  if (spin) {
-    spin = false;
-    displayingSymbols = true;
-  }
-  if (displayingSymbols) {
-    reelOne(symbolOne);
-    reelTwo(symbolTwo);
-    reelThree(symbolThree);
+function drawReels() {
+  for (let reel of reelArray) {
+    rectMode(CENTER);
+    rect(reel.x, reel.y, reel.w, reel.h);
   }
 }
 
+function displaySymbols() {
+  if (spin) {
+    spin = false;
+    displayingSymbols = "firstReel";
+  }
+  if (frameCount % 15 === 0) {
+    if (displayingSymbols === "firstReel") {
+      symbolOne = (symbolOne + 1) % symbols.length;
+      if (millis() > spinTime + ROLL_TIME) {
+        displayingSymbols = "secondReel";
+        spinTime = millis();
+      }
+    }
+    if ( displayingSymbols === "secondReel") {
+      symbolTwo = (symbolTwo + 1) % symbols.length;
+      if (millis() > spinTime + ROLL_TIME + 250) {
+        displayingSymbols = "thirdReel";
+        spinTime = millis();
+      }
+    }
+    if ( displayingSymbols === "thirdReel") {
+      symbolThree = (symbolThree + 1) % symbols.length;
+      if (millis() > spinTime + ROLL_TIME + 500) {
+        displayingSymbols = false;
+        spinTime = millis();
+      }
+    }
+  }
+  reelOne(symbolOne);
+  reelTwo(symbolTwo);
+  reelThree(symbolThree);
+}
+
 function reelOne(one) {
-  let top = (one + 1) % symbols.length
-  let bottom = (one - 1 + symbols.length) % symbols.length
+  let top = (one + 1) % symbols.length;
+  let bottom = (one - 1 + symbols.length) % symbols.length;
   imageMode(CENTER);
   image(symbols[top], reelArray[0].x, height/2 - reelArray[0].h/2);
   image(symbols[one], reelArray[0].x, height/2);
@@ -79,8 +102,8 @@ function reelOne(one) {
 }
 
 function reelTwo(two) {
-  let top = (two + 1) % symbols.length
-  let bottom = (two - 1 + symbols.length) % symbols.length
+  let top = (two + 1) % symbols.length;
+  let bottom = (two - 1 + symbols.length) % symbols.length;
   imageMode(CENTER);
   image(symbols[top], reelArray[1].x, height/2 - reelArray[0].h/2);
   image(symbols[two], reelArray[1].x, height/2);
@@ -88,14 +111,17 @@ function reelTwo(two) {
 }
 
 function reelThree(three) {
-  let top = (three + 1) % symbols.length
-  let bottom = (three - 1 + symbols.length) % symbols.length
+  let top = (three + 1) % symbols.length;
+  let bottom = (three - 1 + symbols.length) % symbols.length;
   imageMode(CENTER);
   image(symbols[top], reelArray[2].x, height/2 - reelArray[0].h/2);
   image(symbols[three], reelArray[2].x, height/2);
   image(symbols[bottom], reelArray[2].x, height/2 + reelArray[0].h/2);
 }
 
-function mousePressed() {
-  spin = true;
+function mouseClicked() {
+  if (!displayingSymbols) {
+    spin = true;
+    spinTime = millis();
+  }
 }
