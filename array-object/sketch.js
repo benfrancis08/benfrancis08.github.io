@@ -37,6 +37,7 @@ function draw() {
   background(150);
   drawReels();
   displaySymbols();
+  createFrame();
 }
 
 function createReels() {
@@ -53,6 +54,7 @@ function createReels() {
 }
 
 function drawReels() {
+  fill(255);
   for (let reel of reelArray) {
     rectMode(CENTER);
     rect(reel.x, reel.y, reel.w, reel.h);
@@ -117,6 +119,23 @@ function reelThree(three) {
   image(symbols[top], reelArray[2].x, height/2 - reelArray[0].h/2);
   image(symbols[three], reelArray[2].x, height/2);
   image(symbols[bottom], reelArray[2].x, height/2 + reelArray[0].h/2);
+}
+
+function createFrame() {
+  let middleReel = reelArray[1];
+  let reelTop = middleReel.y - middleReel.h/2;
+  let reelBottom = middleReel.y + middleReel.h/2;
+  
+  let topFrameH = symbols[0].height/2;
+  let topFrameW = symbols[0].width*4;
+
+  let leftFrameX = middleReel.x - middleReel.w*2
+
+  fill("red");
+  rect(middleReel.x, reelTop - topFrameH/2, topFrameW, topFrameH);
+  rect(middleReel.x, reelBottom + topFrameH/2, topFrameW, topFrameH);
+
+  rect(leftFrameX, middleReel.y, topFrameH, middleReel.h);
 }
 
 function mouseClicked() {
