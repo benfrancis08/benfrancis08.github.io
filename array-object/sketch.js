@@ -7,14 +7,13 @@
 
 let symbols = ["bar", "bell", "cherries", "clover", "coin", "gem", "horseshoe", "seven"];
 let reelArray = [];
+let symbolChoiceArray = [];
 let reelAmount = 3;
-let symbolOne;
-let symbolTwo;
-let symbolThree;
 let spin = false;
 let displayingSymbols = false;
 let spinTime;
 const ROLL_TIME = 3000;
+const ROLL_OFFSET = 250;
 
 function preload() {
   for (let i = 0; i < symbols.length; i++) {
@@ -26,9 +25,12 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   createReels();
-  symbolOne = floor(random(0, symbols.length));
-  symbolTwo = floor(random(0, symbols.length));
-  symbolThree = floor(random(0, symbols.length));
+  for (let i = 0; i < 3; i++) {
+    symbolChoiceArray.push(floor(random(0, symbols.length)));
+  }
+  // symbolOne = floor(random(0, symbols.length));
+  // symbolTwo = floor(random(0, symbols.length));
+  // symbolThree = floor(random(0, symbols.length));
   spinTime = millis();
   
 }
@@ -55,6 +57,7 @@ function createReels() {
 
 function drawReels() {
   fill(255);
+  stroke(0);
   for (let reel of reelArray) {
     rectMode(CENTER);
     rect(reel.x, reel.y, reel.w, reel.h);
@@ -68,33 +71,36 @@ function displaySymbols() {
   }
   if (frameCount % 15 === 0) {
     if (displayingSymbols === "firstReel") {
-      symbolOne = (symbolOne + 1) % symbols.length;
+      symbolChoiceArray[0] = (symbolChoiceArray[0] + 1) % symbols.length;
       if (millis() > spinTime + ROLL_TIME) {
         displayingSymbols = "secondReel";
         spinTime = millis();
       }
     }
     if ( displayingSymbols === "secondReel") {
-      symbolTwo = (symbolTwo + 1) % symbols.length;
-      if (millis() > spinTime + ROLL_TIME + 250) {
+      symbolChoiceArray[1] = (symbolChoiceArray[1] + 1) % symbols.length;
+      if (millis() > spinTime + ROLL_TIME + ROLL_OFFSET) {
         displayingSymbols = "thirdReel";
         spinTime = millis();
       }
     }
     if ( displayingSymbols === "thirdReel") {
-      symbolThree = (symbolThree + 1) % symbols.length;
-      if (millis() > spinTime + ROLL_TIME + 500) {
+      symbolChoiceArray[2] = (symbolChoiceArray[2] + 1) % symbols.length;
+      if (millis() > spinTime + ROLL_TIME + ROLL_OFFSET*2) {
         displayingSymbols = false;
         spinTime = millis();
       }
     }
   }
-  reelOne(symbolOne);
-  reelTwo(symbolTwo);
-  reelThree(symbolThree);
+  for (let i = 0; i < 3; i ++) {
+    displaySymbolsOnReel(symbolChoiceArray[i]);
+  }
+  // reelOne(symbolOne);
+  // reelTwo(symbolTwo);
+  // reelThree(symbolThree);
 }
 
-function reelOne(one) {
+function displaySymbolsOnReel(one) {
   let top = (one + 1) % symbols.length;
   let bottom = (one - 1 + symbols.length) % symbols.length;
   imageMode(CENTER);
@@ -129,13 +135,16 @@ function createFrame() {
   let topFrameH = symbols[0].height/2;
   let topFrameW = symbols[0].width*4;
 
-  let leftFrameX = middleReel.x - middleReel.w*2
+  let leftFrameX = middleReel.x - middleReel.w*2;
+  let rightFrameX = middleReel.x + middleReel.w*2;
 
   fill("red");
+  noStroke();
   rect(middleReel.x, reelTop - topFrameH/2, topFrameW, topFrameH);
   rect(middleReel.x, reelBottom + topFrameH/2, topFrameW, topFrameH);
 
-  rect(leftFrameX, middleReel.y, topFrameH, middleReel.h);
+  rect(leftFrameX + topFrameH/2, middleReel.y, topFrameH, middleReel.h);
+  rect(rightFrameX - topFrameH/2, middleReel.y, topFrameH, middleReel.h);
 }
 
 function mouseClicked() {
