@@ -28,9 +28,6 @@ function setup() {
   for (let i = 0; i < 3; i++) {
     symbolChoiceArray.push(floor(random(0, symbols.length)));
   }
-  // symbolOne = floor(random(0, symbols.length));
-  // symbolTwo = floor(random(0, symbols.length));
-  // symbolThree = floor(random(0, symbols.length));
   spinTime = millis();
   
 }
@@ -93,38 +90,21 @@ function displaySymbols() {
     }
   }
   for (let i = 0; i < 3; i ++) {
-    displaySymbolsOnReel(symbolChoiceArray[i]);
+    displaySymbolsOnReel(symbolChoiceArray[i], i);
   }
-  // reelOne(symbolOne);
-  // reelTwo(symbolTwo);
-  // reelThree(symbolThree);
 }
 
-function displaySymbolsOnReel(one) {
-  let top = (one + 1) % symbols.length;
-  let bottom = (one - 1 + symbols.length) % symbols.length;
+function displaySymbolsOnReel(symbol, reel) {
+  let top = (symbol + 1) % symbols.length;
+  let bottom = (symbol - 1 + symbols.length) % symbols.length;
   imageMode(CENTER);
-  image(symbols[top], reelArray[0].x, height/2 - reelArray[0].h/2);
-  image(symbols[one], reelArray[0].x, height/2);
-  image(symbols[bottom], reelArray[0].x, height/2 + reelArray[0].h/2);
+  image(symbols[top], reelArray[reel].x, height/2 - reelArray[0].h/2);
+  image(symbols[symbol], reelArray[reel].x, height/2);
+  image(symbols[bottom], reelArray[reel].x, height/2 + reelArray[0].h/2);
 }
 
-function reelTwo(two) {
-  let top = (two + 1) % symbols.length;
-  let bottom = (two - 1 + symbols.length) % symbols.length;
-  imageMode(CENTER);
-  image(symbols[top], reelArray[1].x, height/2 - reelArray[0].h/2);
-  image(symbols[two], reelArray[1].x, height/2);
-  image(symbols[bottom], reelArray[1].x, height/2 + reelArray[0].h/2);
-}
-
-function reelThree(three) {
-  let top = (three + 1) % symbols.length;
-  let bottom = (three - 1 + symbols.length) % symbols.length;
-  imageMode(CENTER);
-  image(symbols[top], reelArray[2].x, height/2 - reelArray[0].h/2);
-  image(symbols[three], reelArray[2].x, height/2);
-  image(symbols[bottom], reelArray[2].x, height/2 + reelArray[0].h/2);
+function checkWin() {
+  
 }
 
 function createFrame() {
