@@ -8,17 +8,21 @@
 let symbols = ["bar", "bell", "cherries", "clover", "coin", "gem", "horseshoe", "seven"];
 let reelArray = [];
 let symbolChoiceArray = [];
-let reelAmount = 3;
+
 let spin = false;
-let displayingSymbols = false;
+let displayingSymbols = "No roll";
+let displayingPayout = false;
+
 let spinTime;
-
 let payoutTableButton;
+let sevenIndex;
 
-const ROLL_TIME = 3000;
+const REEL_AMOUNT = 3;
+const ROLL_TIME = 1500;
 const ROLL_OFFSET = 250;
 
 function preload() {
+  sevenIndex = symbols.indexOf("seven");
   for (let i = 0; i < symbols.length; i++) {
     let symbol = symbols[i];
     symbols[i] = loadImage(`images/${symbol}.png`);
@@ -32,7 +36,6 @@ function setup() {
     symbolChoiceArray.push(floor(random(0, symbols.length)));
   }
   spinTime = millis();
-  
 }
 
 function draw() {
@@ -45,9 +48,9 @@ function draw() {
 
 function createReels() {
   let firstReelX = width/2 - symbols[0].width;
-  for (let i = 0; i < reelAmount; i++) {
+  for (let i = 0; i < REEL_AMOUNT; i++) {
     let theReel = {
-      x: firstReelX + symbols[0].width * i-1,
+      x: firstReelX + symbols[0].width * i,
       y: height/2,
       w: symbols[0].width,
       h: symbols[0].height*2
@@ -70,7 +73,7 @@ function displaySymbols() {
     spin = false;
     displayingSymbols = "firstReel";
   }
-  if (frameCount % 15 === 0) {
+  if (frameCount % 5 === 0) {
     if (displayingSymbols === "firstReel") {
       symbolChoiceArray[0] = (symbolChoiceArray[0] + 1) % symbols.length;
       if (millis() > spinTime + ROLL_TIME) {
@@ -78,18 +81,19 @@ function displaySymbols() {
         spinTime = millis();
       }
     }
-    if ( displayingSymbols === "secondReel") {
+    else if ( displayingSymbols === "secondReel") {
       symbolChoiceArray[1] = (symbolChoiceArray[1] + 1) % symbols.length;
       if (millis() > spinTime + ROLL_TIME + ROLL_OFFSET) {
         displayingSymbols = "thirdReel";
         spinTime = millis();
       }
     }
-    if ( displayingSymbols === "thirdReel") {
+    else if ( displayingSymbols === "thirdReel") {
       symbolChoiceArray[2] = (symbolChoiceArray[2] + 1) % symbols.length;
       if (millis() > spinTime + ROLL_TIME + ROLL_OFFSET*2) {
         displayingSymbols = false;
         spinTime = millis();
+        checkWin();
       }
     }
   }
@@ -108,7 +112,28 @@ function displaySymbolsOnReel(symbol, reel) {
 }
 
 function checkWin() {
-  
+  if (!displayingSymbols) {
+    let symbolOne = symbolChoiceArray[0];
+    let symbolTwo = symbolChoiceArray[1];
+    let symbolThree = symbolChoiceArray[2];
+
+    if (symbolOne === sevenIndex && symbolTwo === sevenIndex && symbolThree === sevenIndex) {
+      console.log("150x");
+    }
+    else if (symbolOne === symbolTwo && symbolTwo === symbolThree) {
+      console.log("10x");
+    }
+    else if ((symbolOne === sevenIndex && symbolTwo === sevenIndex) ||
+             (symbolOne === sevenIndex && symbolThree === sevenIndex) ||
+             (symbolTwo === sevenIndex && symbolThree === sevenIndex)) {
+      console.log("2x");
+    }
+    else if ((symbolOne === symbolTwo) ||
+             (symbolOne === symbolThree) ||
+             (symbolTwo === symbolThree)) {
+      console.log("1.5x");
+    }
+  }
 }
 
 function createFrame() {
@@ -119,16 +144,21 @@ function createFrame() {
   let topFrameH = symbols[0].height/2;
   let topFrameW = symbols[0].width*4;
 
-  let leftFrameX = middleReel.x - middleReel.w*2;
-  let rightFrameX = middleReel.x + middleReel.w*2;
+  let leftFrameX = middleReel.x - middleReel.w*2  + topFrameH/2;
+  let rightFrameX = middleReel.x + middleReel.w*2  - topFrameH/2;
 
   fill("red");
   noStroke();
   rect(middleReel.x, reelTop - topFrameH/2, topFrameW, topFrameH);
   rect(middleReel.x, reelBottom + topFrameH/2, topFrameW, topFrameH);
 
-  rect(leftFrameX + topFrameH/2, middleReel.y, topFrameH, middleReel.h);
-  rect(rightFrameX - topFrameH/2, middleReel.y, topFrameH, middleReel.h);
+  rect(leftFrameX, middleReel.y, topFrameH, middleReel.h);
+  rect(rightFrameX, middleReel.y, topFrameH, middleReel.h);
+  push();
+  strokeWeight(5);
+  stroke("red");
+  line(leftFrameX, middleReel.y, rightFrameX, middleReel.y);
+  pop();
 }
 
 function payoutTable() {
@@ -147,6 +177,28 @@ function payoutTable() {
   textSize(25);
   text("Payout", payoutTableButton.x, payoutTableButton.y - 15);
   text("Table", payoutTableButton.x, payoutTableButton.y + 15);
+
+  if (displayingPayout) {
+    let payoutBox = {
+      x: width/2,
+      y: height/2,
+      w: reelArray[1].w*6,
+      h: reelArray[1].h*2
+    };
+    let lineOne = "3 of a kind: 7's - 150x";
+    let lineTwo = "2 of a kind: 7's - 2x";
+    let lineThree = "3 of a kind: Any Symbol - 10x";
+    let lineFour = "2 of a kind: Any Symbol - 1.5x";
+
+    fill(255);
+    stroke(0);
+    rect(payoutBox.x, payoutBox.y, payoutBox.w, payoutBox.h);
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    fill(0);
+    noStroke();
+    text(`${lineOne}\n${lineTwo}\n${lineThree}\n${lineFour}`, payoutBox.x, payoutBox.y);
+  }
 }
 
 function mouseClicked() {
@@ -156,9 +208,9 @@ function mouseClicked() {
   let mouseInPayoutButtonBottom = mouseY < payoutTableButton.y + payoutTableButton.h/2;
 
   if (mouseInPayoutButtonLeft && mouseInPayoutButtonRight && mouseInPayoutButtonTop && mouseInPayoutButtonBottom) {
-    console.log("Payout");
+    displayingPayout = !displayingPayout;
   }
-  else if (!displayingSymbols) {
+  else if ((!displayingSymbols || displayingSymbols === "No roll") && !displayingPayout) {
     spin = true;
     spinTime = millis();
   }
