@@ -3,7 +3,10 @@
 // 3/5/2026
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - Explored putting images in an array using a for loop
+// - Explored saving to local storage using getItem and storeItem
+// - Explored functions such as parseFloat and to toFixed to make the money in the correct format ($__.00)
+
 
 let symbols = ["bar", "bell", "cherries", "clover", "coin", "gem", "horseshoe", "seven"];
 let reelArray = [];
@@ -22,8 +25,7 @@ let rollTime;
 let rollSpeedTime;
 let winFactor;
 let balance;
-let bet = 5;
-bet = bet.toFixed(2);
+let bet;
 
 const REEL_AMOUNT = 3;
 const ROLL_SPEED = 50;
@@ -42,11 +44,20 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   createReels();
-  balance = getItem(balance);
+  balance = getItem("balance");
   if (balance === null) {
     balance = 1000;
   }
-  balance = balance.toFixed(2);
+  else {
+    balance = parseFloat(balance);
+  }
+  bet = getItem("bet");
+  if (bet === null) {
+    bet = 5;
+  }
+  else {
+    bet = parseFloat(bet);
+  }
   for (let i = 0; i < 3; i++) {
     symbolChoiceArray.push(floor(random(0, symbols.length)));
   }
@@ -89,7 +100,7 @@ function displaySymbols() {
   if (spin) {
     spin = false;
     balance -= bet;
-    balance = balance.toFixed(2);
+    storeItem("balance", balance);
     rollSpeedTime = millis() + ROLL_SPEED;
     rollTime = random(ROLL_FLOOR, ROLL_ROOF);
     displayingSymbols = "firstReel";
@@ -249,16 +260,14 @@ function createChangeBetButton() {
 
 function changeBet() {
   let tempBet;
-  tempBet = prompt("Enter a bet amount");
+  tempBet = prompt(`Enter a bet amount\nBalance: $${balance}`);
   if (tempBet === null) {
     return;
   }
   tempBet = parseFloat(tempBet);
-  tempBet = tempBet.toFixed(2);
-  if (tempBet !== "NaN" && balance - tempBet >= 0) {
+  if (!isNaN(tempBet) && balance - tempBet >= 0 && tempBet > 0) {
     bet = tempBet;
-    bet = parseFloat(bet);
-    bet = bet.toFixed(2);
+    storeItem("bet", bet);
   }
   else {
     alert("Please enter a valid number");
@@ -269,17 +278,16 @@ function changeBet() {
 function displaymoney() {
   fill(0);
   noStroke();
-  text(`Balance: $${balance}`, width/2, 20);
-  text(`Bet: $${bet}`, width/2, 40);
+  text(`Balance: $${balance.toFixed(2)}`, width/2, 20);
+  text(`Bet: $${bet.toFixed(2)}`, width/2, 40);
 }
 
 function changeBalance() {
   let tempBet = bet;
   if (!displayingSymbols) {
-    tempBet = -(tempBet*winFactor);
-    balance -= tempBet;
-    balance = balance.toFixed(2);
+    balance += tempBet*winFactor;
   }
+  storeItem("balance", balance);
 }
 
 function mouseClicked() {
@@ -300,10 +308,17 @@ function mouseClicked() {
     changeBet();
   }
   else if (balance - bet < 0) {
-    alert("Lower your bet\nOr press up arrow to increase balance");
+    alert("Lower your bet\n(Or press up arrow to increase balance)");
   }
   else if (!displayingSymbols && !displayingPayout) {
     spin = true;
     spinTime = millis();
+  }
+}
+
+function keyPressed() {
+  if (keyCode === 38) {
+    balance += 1000;
+    storeItem("balance", balance);
   }
 }
