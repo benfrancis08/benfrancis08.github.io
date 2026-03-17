@@ -59,7 +59,7 @@ function draw() {
   displaySymbols();
   createFrame();
   payoutTable();
-  changeBet();
+  createChangeBetButton();
   displaymoney();
 }
 
@@ -229,7 +229,7 @@ function payoutTable() {
   }
 }
 
-function changeBet() {
+function createChangeBetButton() {
   changeBetButton = {
     x: width/1.5,
     y: height - 100,
@@ -245,21 +245,25 @@ function changeBet() {
   textSize(25);
   text("Change", changeBetButton.x, changeBetButton.y - 15);
   text("Bet", changeBetButton.x, changeBetButton.y + 15);
+}
 
-  if (changingBet) {
-    let tempBet;
-    tempBet = prompt("Enter a bet amount");
-    console.log(typeof tempBet);
-    if (tempBet != null) {
-      console.log("b")
-      // bet = tempBet;
-      // bet = parseInt(bet)
-      // bet = bet.toFixed(2);
-    }
-    else if (typeof tempBet === "number")
-      console.log("a");
+function changeBet() {
+  let tempBet;
+  tempBet = prompt("Enter a bet amount");
+  if (tempBet === null) {
+    return;
   }
-  changingBet = false;
+  tempBet = parseFloat(tempBet);
+  tempBet = tempBet.toFixed(2);
+  if (tempBet !== "NaN" && balance - tempBet >= 0) {
+    bet = tempBet;
+    bet = parseFloat(bet);
+    bet = bet.toFixed(2);
+  }
+  else {
+    alert("Please enter a valid number");
+    changeBet();
+  }
 }
 
 function displaymoney() {
@@ -272,9 +276,8 @@ function displaymoney() {
 function changeBalance() {
   let tempBet = bet;
   if (!displayingSymbols) {
-    console.log(winFactor);
     tempBet = -(tempBet*winFactor);
-    balance -= tempBet
+    balance -= tempBet;
     balance = balance.toFixed(2);
   }
 }
@@ -294,7 +297,10 @@ function mouseClicked() {
     displayingPayout = !displayingPayout;
   }
   else if (mouseInChangeBetButtonLeft && mouseInChangeBetButtonRight && mouseInChangeBetButtonTop && mouseInChangeBetButtonBottom && !displayingSymbols) {
-    changingBet = true;
+    changeBet();
+  }
+  else if (balance - bet < 0) {
+    alert("Lower your bet\nOr press up arrow to increase balance");
   }
   else if (!displayingSymbols && !displayingPayout) {
     spin = true;
