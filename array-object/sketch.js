@@ -10,7 +10,7 @@ let reelArray = [];
 let symbolChoiceArray = [];
 
 let spin = false;
-let displayingSymbols = "No roll";
+let displayingSymbols = false;
 let displayingPayout = false;
 let changingBet = false;
 
@@ -20,7 +20,10 @@ let changeBetButton;
 let sevenIndex;
 let rollTime;
 let rollSpeedTime;
+let winFactor;
 let balance;
+let bet = 5;
+bet = bet.toFixed(2);
 
 const REEL_AMOUNT = 3;
 const ROLL_SPEED = 50;
@@ -43,6 +46,7 @@ function setup() {
   if (balance === null) {
     balance = 1000;
   }
+  balance = balance.toFixed(2);
   for (let i = 0; i < 3; i++) {
     symbolChoiceArray.push(floor(random(0, symbols.length)));
   }
@@ -56,7 +60,7 @@ function draw() {
   createFrame();
   payoutTable();
   changeBet();
-  money();
+  displaymoney();
 }
 
 function createReels() {
@@ -84,6 +88,8 @@ function drawReels() {
 function displaySymbols() {
   if (spin) {
     spin = false;
+    balance -= bet;
+    balance = balance.toFixed(2);
     rollSpeedTime = millis() + ROLL_SPEED;
     rollTime = random(ROLL_FLOOR, ROLL_ROOF);
     displayingSymbols = "firstReel";
@@ -112,6 +118,7 @@ function displaySymbols() {
         displayingSymbols = false;
         spinTime = millis();
         checkWin();
+        changeBalance();
       }
     }
   }
@@ -136,20 +143,23 @@ function checkWin() {
     let symbolThree = symbolChoiceArray[2];
 
     if (symbolOne === sevenIndex && symbolTwo === sevenIndex && symbolThree === sevenIndex) {
-      console.log("150x");
+      winFactor = 150;
     }
     else if (symbolOne === symbolTwo && symbolTwo === symbolThree) {
-      console.log("10x");
+      winFactor = 10;
     }
     else if (symbolOne === sevenIndex && symbolTwo === sevenIndex ||
              symbolOne === sevenIndex && symbolThree === sevenIndex ||
              symbolTwo === sevenIndex && symbolThree === sevenIndex) {
-      console.log("2x");
+      winFactor = 2;
     }
     else if (symbolOne === symbolTwo ||
              symbolOne === symbolThree ||
              symbolTwo === symbolThree) {
-      console.log("1.5x");
+      winFactor = 1.5;
+    }
+    else {
+      winFactor = 0;
     }
   }
 }
@@ -237,13 +247,36 @@ function changeBet() {
   text("Bet", changeBetButton.x, changeBetButton.y + 15);
 
   if (changingBet) {
+    let tempBet;
+    tempBet = prompt("Enter a bet amount");
+    console.log(typeof tempBet);
+    if (tempBet != null) {
+      console.log("b")
+      // bet = tempBet;
+      // bet = parseInt(bet)
+      // bet = bet.toFixed(2);
+    }
+    else if (typeof tempBet === "number")
+      console.log("a");
   }
+  changingBet = false;
 }
 
-function money() {
+function displaymoney() {
   fill(0);
   noStroke();
   text(`Balance: $${balance}`, width/2, 20);
+  text(`Bet: $${bet}`, width/2, 40);
+}
+
+function changeBalance() {
+  let tempBet = bet;
+  if (!displayingSymbols) {
+    console.log(winFactor);
+    tempBet = -(tempBet*winFactor);
+    balance -= tempBet
+    balance = balance.toFixed(2);
+  }
 }
 
 function mouseClicked() {
@@ -260,10 +293,10 @@ function mouseClicked() {
   if (mouseInPayoutButtonLeft && mouseInPayoutButtonRight && mouseInPayoutButtonTop && mouseInPayoutButtonBottom) {
     displayingPayout = !displayingPayout;
   }
-  else if (mouseInChangeBetButtonLeft && mouseInChangeBetButtonRight && mouseInChangeBetButtonTop && mouseInChangeBetButtonBottom) {
+  else if (mouseInChangeBetButtonLeft && mouseInChangeBetButtonRight && mouseInChangeBetButtonTop && mouseInChangeBetButtonBottom && !displayingSymbols) {
     changingBet = true;
   }
-  else if ((!displayingSymbols || displayingSymbols === "No roll") && !displayingPayout) {
+  else if (!displayingSymbols && !displayingPayout) {
     spin = true;
     spinTime = millis();
   }
