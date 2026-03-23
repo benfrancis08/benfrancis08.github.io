@@ -13,3 +13,4 @@
 ## Assignments
 - [Interactive Scene](interactive-scene)
 - [Arrays and Object Notation](array-object)
+- [2d Arrays Project](2d-arrays)
