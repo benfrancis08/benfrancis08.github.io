@@ -8,6 +8,7 @@
 - [Perlin Noise](05-noise)
 - [Grid](06-grid)
 - [Rectangualar Grid](07-rect-grid)
+- [Game of Life](08-life)
 
 ## Assignments
 - [Interactive Scene](interactive-scene)
