@@ -12,21 +12,22 @@ let rows;
 let cols;
 let buttons;
 let cellSize;
+let mines;
 
 const EASY_GRID = {
   ROWS: 10,
   COLS: 10,
-  BOMBS: 20
+  MINES: 20
 };
 const MEDIUM_GRID = {
   ROWS: 12,
   COLS: 12,
-  BOMBS: 40
+  MINES: 40
 };
 const HARD_GRID = {
   ROWS: 14,
   COLS: 14,
-  BOMBS: 60
+  MINES: 60
 };
 
 function setup() {
@@ -80,14 +81,17 @@ function createGrid() {
   if (gameState === "Easy") {
     rows = EASY_GRID.ROWS;
     cols = EASY_GRID.COLS;
+    mines = EASY_GRID.MINES;
   }
   else if (gameState === "Medium") {
     rows = MEDIUM_GRID.ROWS;
     cols = MEDIUM_GRID.COLS;
+    mines = MEDIUM_GRID.MINES;
   }
   else if (gameState === "Hard") {
     rows = HARD_GRID.ROWS;
     cols = HARD_GRID.COLS;
+    mines = HARD_GRID.MINES;
   }
 
   let cellSizeWidth = width/cols;
@@ -106,6 +110,24 @@ function createGrid() {
       grid[y].push(0);
     }
   }
+  spawnMines();
+}
+
+function spawnMines() {
+  while (mines > 0) {
+    for (let x = 0; x < cols; x++) {
+
+      for (let y = 0; y < rows; y ++) {
+        if (mines > 0 && Math.floor(random(5)) === 1 && grid[y] !== 1) {
+          grid[y][x] = 1;
+          mines -= 1;
+        }
+        else {
+          grid[y][x] = 0;
+        }
+      }
+    }
+  }
 }
 
 function displayGrid() {
@@ -114,12 +136,12 @@ function displayGrid() {
   let gridWidth = cols*cellSize;
   let gridHeight = rows*cellSize;
 
-  let startX = (width - gridWidth)/2
-  let startY = (height - gridHeight)/2
+  let startX = (width - gridWidth)/2;
+  let startY = (height - gridHeight)/2;
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      fill(255);
+      fill(180);
       square(startX + x*cellSize, startY + y*cellSize, cellSize);
     }
   }
