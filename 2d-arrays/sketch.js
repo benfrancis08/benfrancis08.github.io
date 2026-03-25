@@ -11,18 +11,22 @@ let grid;
 let rows;
 let cols;
 let buttons;
+let cellSize;
 
 const EASY_GRID = {
   ROWS: 10,
-  COLS: 10
+  COLS: 10,
+  BOMBS: 20
 };
 const MEDIUM_GRID = {
-  ROWS: 15,
-  COLS: 20
+  ROWS: 12,
+  COLS: 12,
+  BOMBS: 40
 };
 const HARD_GRID = {
-  ROWS: 20,
-  COLS: 30
+  ROWS: 14,
+  COLS: 14,
+  BOMBS: 60
 };
 
 function setup() {
@@ -37,7 +41,7 @@ function setup() {
 function draw() {
   background(220);
   displayMenu();
-  console.log(gameState);
+  displayGrid();
 }
 
 function displayMenu() {
@@ -74,20 +78,49 @@ function mouseIsIn(btn) {
 
 function createGrid() {
   if (gameState === "Easy") {
-    rows = Math.floor(height/EASY_GRID.ROWS);
-    cols = Math.floor(width/EASY_GRID.COLS);
+    rows = EASY_GRID.ROWS;
+    cols = EASY_GRID.COLS;
   }
   else if (gameState === "Medium") {
-    rows = Math.floor(height/MEDIUM_GRID.ROWS);
-    cols = Math.floor(width/MEDIUM_GRID.COLS);
+    rows = MEDIUM_GRID.ROWS;
+    cols = MEDIUM_GRID.COLS;
   }
   else if (gameState === "Hard") {
-    rows = Math.floor(height/HARD_GRID.ROWS);
-    cols = Math.floor(width/HARD_GRID.COLS);
+    rows = HARD_GRID.ROWS;
+    cols = HARD_GRID.COLS;
   }
+
+  let cellSizeWidth = width/cols;
+  let cellSizeHeight = height/rows;
+  if (cellSizeWidth > cellSizeHeight) {
+    cellSize = Math.floor(cellSizeHeight)*0.95;
+  }
+  else {
+    cellSize = Math.floor(cellSizeWidth)*0.95;
+  }
+
+  grid = [];
+  for (let y = 0; y < rows; y++) {
+    grid.push([]);
+    for (let x = 0; x < cols; x++) {
+      grid[y].push(0);
+    }
+  }
+}
+
+function displayGrid() {
+  rectMode(CORNER);
+
+  let gridWidth = cols*cellSize;
+  let gridHeight = rows*cellSize;
+
+  let startX = (width - gridWidth)/2
+  let startY = (height - gridHeight)/2
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      
+      fill(255);
+      square(startX + x*cellSize, startY + y*cellSize, cellSize);
     }
   }
 }
@@ -96,6 +129,7 @@ function mouseClicked() {
   for (let btn of buttons) {
     if (mouseIsIn(btn)) {
       gameState = btn.label;
+      createGrid();
     }
   }
 }
