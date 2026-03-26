@@ -13,22 +13,28 @@ let cols;
 let buttons;
 let cellSize;
 let mines;
+let mineImg;
 
 const EASY_GRID = {
   ROWS: 10,
   COLS: 10,
-  MINES: 20
+  MINES: 10
 };
 const MEDIUM_GRID = {
   ROWS: 12,
   COLS: 12,
-  MINES: 40
+  MINES: 20
 };
 const HARD_GRID = {
   ROWS: 14,
   COLS: 14,
-  MINES: 60
+  MINES: 30
 };
+const MINE = 9;
+
+function preload() {
+  mineImg = loadImage("images/mine.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -111,19 +117,36 @@ function createGrid() {
     }
   }
   spawnMines();
+  detectMines();
 }
 
 function spawnMines() {
-  while (mines > 0) {
-    for (let x = 0; x < cols; x++) {
+  let placedMines = 0;
+  while (placedMines < mines) {
+    let x = Math.floor(random(cols));
+    let y = Math.floor(random(rows));
 
-      for (let y = 0; y < rows; y ++) {
-        if (mines > 0 && Math.floor(random(5)) === 1 && grid[y] !== 1) {
-          grid[y][x] = 1;
-          mines -= 1;
-        }
-        else {
-          grid[y][x] = 0;
+    if (grid[y][x] === 0) {
+      grid[y][x] = MINE;
+      placedMines ++;
+    }
+  }
+}
+
+function detectMines() {
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      let count = 0;
+      
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          
+          if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && grid[y][x] !== MINE) {
+            if (grid[y + j][x + i] === MINE) {
+              count += 1;
+            }
+            grid[y][x] = count;
+          }
         }
       }
     }
@@ -132,6 +155,7 @@ function spawnMines() {
 
 function displayGrid() {
   rectMode(CORNER);
+  textAlign(CENTER, CENTER);
 
   let gridWidth = cols*cellSize;
   let gridHeight = rows*cellSize;
@@ -141,8 +165,15 @@ function displayGrid() {
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      fill(180);
-      square(startX + x*cellSize, startY + y*cellSize, cellSize);
+      if (grid[y][x] === MINE) {
+        image(mineImg, startX + x*cellSize, startY + y*cellSize, cellSize, cellSize);
+      }
+      else {
+        fill(180);
+        square(startX + x*cellSize, startY + y*cellSize, cellSize);
+        fill(0);
+        text(grid[y][x], startX + x*cellSize + cellSize/2, startY + y*cellSize + cellSize/2);
+      }
     }
   }
 }
