@@ -30,7 +30,6 @@ const HARD_GRID = {
   COLS: 14,
   MINES: 30
 };
-const MINE = 9;
 
 function preload() {
   mineImg = loadImage("images/mine.png");
@@ -113,7 +112,10 @@ function createGrid() {
   for (let y = 0; y < rows; y++) {
     grid.push([]);
     for (let x = 0; x < cols; x++) {
-      grid[y].push(0);
+      grid[y].push({index: 0,
+                    mine: false,
+                    clicked: false,
+                    });
     }
   }
   spawnMines();
@@ -126,8 +128,8 @@ function spawnMines() {
     let x = Math.floor(random(cols));
     let y = Math.floor(random(rows));
 
-    if (grid[y][x] === 0) {
-      grid[y][x] = MINE;
+    if (grid[y][x].index === 0) {
+      grid[y][x].mine = true;
       placedMines ++;
     }
   }
@@ -141,11 +143,11 @@ function detectMines() {
       for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
           
-          if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && grid[y][x] !== MINE) {
-            if (grid[y + j][x + i] === MINE) {
+          if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y][x].mine) {
+            if (grid[y + j][x + i].mine) {
               count += 1;
             }
-            grid[y][x] = count;
+            grid[y][x].index = count;
           }
         }
       }
@@ -165,14 +167,34 @@ function displayGrid() {
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      if (grid[y][x] === MINE) {
-        image(mineImg, startX + x*cellSize, startY + y*cellSize, cellSize, cellSize);
+      let gridX = startX + x*cellSize;
+      let gridY = startY + y*cellSize;
+
+      if (grid[y][x].clicked) {
+        if (grid[y][x].mine) {
+          image(mineImg, gridX, gridY, cellSize, cellSize);
+        }
+        else {
+          fill(180);
+          fill(0);
+          text(grid[y][x].index, gridX + cellSize/2, gridY + cellSize/2);
+        }
       }
       else {
-        fill(180);
-        square(startX + x*cellSize, startY + y*cellSize, cellSize);
-        fill(0);
-        text(grid[y][x], startX + x*cellSize + cellSize/2, startY + y*cellSize + cellSize/2);
+        fill(150);
+        stroke(5);
+        square(gridX, gridY, cellSize);
+        
+        const SHADOW_THICKNESS = 20;
+
+        fill(255);
+        noStroke();
+        rect(gridX, gridY, cellSize, cellSize/SHADOW_THICKNESS);
+        rect(gridX, gridY, cellSize/SHADOW_THICKNESS, cellSize);
+
+        fill(80);
+        rect(gridX + cellSize/1.05, gridY, cellSize/SHADOW_THICKNESS, cellSize);
+        rect(gridX, gridY + cellSize/1.05, cellSize, cellSize/SHADOW_THICKNESS);
       }
     }
   }
