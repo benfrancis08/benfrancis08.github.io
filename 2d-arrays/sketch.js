@@ -57,7 +57,7 @@ function displayMenu() {
     textSize(width/20);
     
     for (let btn of buttons) {
-      if (mouseIsIn(btn)) {
+      if (mouseIsInButton(btn)) {
         fill(150);
         btn.w = width/4 + 25;
         btn.h = height/8 + 25;
@@ -75,11 +75,18 @@ function displayMenu() {
   }
 }
 
-function mouseIsIn(btn) {
+function mouseIsInButton(btn) {
   return mouseX > btn.x - btn.w/2 &&
          mouseX < btn.x + btn.w/2 &&
          mouseY > btn.y - btn.h/2 &&
          mouseY < btn.y + btn.h/2;
+}
+
+function mouseIsInCell(x, y) {
+  return mouseX > grid[y][x].x &&
+         mouseX < grid[y][x].x + cellSize &&
+         mouseY > grid[y][x].y &&
+         mouseY < grid[y][x].y + cellSize;
 }
 
 function createGrid() {
@@ -115,6 +122,8 @@ function createGrid() {
       grid[y].push({index: 0,
                     mine: false,
                     clicked: false,
+                    x: 0,
+                    y: 0,
                     });
     }
   }
@@ -128,7 +137,7 @@ function spawnMines() {
     let x = Math.floor(random(cols));
     let y = Math.floor(random(rows));
 
-    if (grid[y][x].index === 0) {
+    if (!grid[y][x].mine) {
       grid[y][x].mine = true;
       placedMines ++;
     }
@@ -170,7 +179,13 @@ function displayGrid() {
       let gridX = startX + x*cellSize;
       let gridY = startY + y*cellSize;
 
+      grid[y][x].x = gridX;
+      grid[y][x].y = gridY;
+
       if (grid[y][x].clicked) {
+        stroke(5);
+        fill(255);
+        square(gridX, gridY, cellSize);
         if (grid[y][x].mine) {
           image(mineImg, gridX, gridY, cellSize, cellSize);
         }
@@ -200,11 +215,34 @@ function displayGrid() {
   }
 }
 
+function floodfill(x, y) {
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y + j][x + i].mine) {
+        if (grid[y + j][x + i].index === 0) {
+          grid[y + j][x + i].clicked = true;
+        }
+      }
+    }
+  }
+}
+
 function mouseClicked() {
-  for (let btn of buttons) {
-    if (mouseIsIn(btn)) {
-      gameState = btn.label;
-      createGrid();
+  if (gameState === "menu") {
+    for (let btn of buttons) {
+      if (mouseIsInButton(btn)) {
+        gameState = btn.label;
+        createGrid();
+      }
+    }
+  }
+  else {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (mouseIsInCell(x, y)) {
+          floodfill(x, y);
+        }
+      }
     }
   }
 }
