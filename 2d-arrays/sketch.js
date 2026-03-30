@@ -215,12 +215,34 @@ function displayGrid() {
   }
 }
 
-function floodfill(x, y) {
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y + j][x + i].mine) {
-        if (grid[y + j][x + i].index === 0) {
-          grid[y + j][x + i].clicked = true;
+// Used Gemini to give me Pseudocode on the logic for my floodFill function
+function floodFill(x, y) {
+  let cellX = Math.floor(x % cols)
+  let cellY = Math.floor(y % rows);
+  
+  if (cellX < 0 || cellX > cols || cellY < 0 || cellY > rows) {
+    return;
+  }
+  if (grid[cellY][cellX].clicked) {
+    return;
+  }
+  if (grid[cellY][cellX].mine) {
+    return;
+  }
+  if (grid[cellY][cellX].index !== 0) {
+    grid[cellY][cellX].clicked = true;
+    return;
+  }
+
+  grid[cellY][cellX].clicked = true;
+
+  if (grid[cellY][cellX].index === 0) {
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y + j][x + i].mine) {
+          if (i !== 0 || j !== 0) {
+            floodFill(x + i,y + j);
+          }
         }
       }
     }
@@ -240,7 +262,7 @@ function mouseClicked() {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
-          floodfill(x, y);
+          floodFill(x, y);
         }
       }
     }
