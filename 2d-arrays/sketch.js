@@ -37,6 +37,10 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  // Found on stack overflow. Needed to disable right click menu in browser so I can use right click in project
+  for (let element of document.getElementsByClassName("p5Canvas")) {
+    element.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
   buttons = [
     {x: width/2, y:height/3, w: width/4, h: height/8, r: 20, label: "Easy"},
     {x: width/2, y:height/2, w: width/4, h: height/8, r: 20, label: "Medium"},
@@ -121,6 +125,7 @@ function createGrid() {
     for (let x = 0; x < cols; x++) {
       grid[y].push({index: 0,
                     mine: false,
+                    flag: false,
                     clicked: false,
                     x: 0,
                     y: 0,
@@ -217,26 +222,24 @@ function displayGrid() {
 
 // Used Gemini to give me Pseudocode on the logic for my floodFill function
 function floodFill(x, y) {
-  let cellX = Math.floor(x % cols)
-  let cellY = Math.floor(y % rows);
   
-  if (cellX < 0 || cellX > cols || cellY < 0 || cellY > rows) {
+  if (x < 0 || x > cols || y < 0 || y > rows) {
     return;
   }
-  if (grid[cellY][cellX].clicked) {
+  if (grid[y][x].clicked) {
     return;
   }
-  if (grid[cellY][cellX].mine) {
+  if (grid[y][x].mine) {
     return;
   }
-  if (grid[cellY][cellX].index !== 0) {
-    grid[cellY][cellX].clicked = true;
+  if (grid[y][x].index !== 0) {
+    grid[y][x].clicked = true;
     return;
   }
 
-  grid[cellY][cellX].clicked = true;
+  grid[y][x].clicked = true;
 
-  if (grid[cellY][cellX].index === 0) {
+  if (grid[y][x].index === 0) {
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y + j][x + i].mine) {
@@ -249,8 +252,8 @@ function floodFill(x, y) {
   }
 }
 
-function mouseClicked() {
-  if (gameState === "menu") {
+function mouseReleased() {
+  if (gameState === "menu" && mouseButton === LEFT) {
     for (let btn of buttons) {
       if (mouseIsInButton(btn)) {
         gameState = btn.label;
@@ -258,7 +261,7 @@ function mouseClicked() {
       }
     }
   }
-  else {
+  else if (mouseButton === LEFT) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
@@ -266,5 +269,11 @@ function mouseClicked() {
         }
       }
     }
+  }
+  else if (mouseButton === RIGHT) {
+    let cellX = Math.floor(mouseX % cols);
+    let cellY = Math.floor(mouseY % rows);
+
+    grid[cellY][cellX].flag = true;
   }
 }
