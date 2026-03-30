@@ -6,13 +6,19 @@
 // - describe what you did to take this project "above and beyond"
 
 let gameState = "menu";
+let firstClick = true;
+let flagCount = 0;
 
 let grid;
+let gridWidth;
+let gridHeight;
 let rows;
 let cols;
 let buttons;
 let cellSize;
 let mines;
+
+let flagImg;
 let mineImg;
 
 const EASY_GRID = {
@@ -33,6 +39,7 @@ const HARD_GRID = {
 
 function preload() {
   mineImg = loadImage("images/mine.png");
+  flagImg = loadImage("images/flag.png");
 }
 
 function setup() {
@@ -51,7 +58,9 @@ function setup() {
 function draw() {
   background(220);
   displayMenu();
-  displayGrid();
+  if (gameState !== "menu") {
+    displayGrid();
+  }
 }
 
 function displayMenu() {
@@ -113,17 +122,17 @@ function createGrid() {
   let cellSizeWidth = width/cols;
   let cellSizeHeight = height/rows;
   if (cellSizeWidth > cellSizeHeight) {
-    cellSize = Math.floor(cellSizeHeight)*0.95;
+    cellSize = Math.floor(cellSizeHeight)*0.8;
   }
   else {
-    cellSize = Math.floor(cellSizeWidth)*0.95;
+    cellSize = Math.floor(cellSizeWidth)*0.8;
   }
 
   grid = [];
   for (let y = 0; y < rows; y++) {
     grid.push([]);
     for (let x = 0; x < cols; x++) {
-      grid[y].push({index: 0,
+      grid[y].push({index: undefined,
                     mine: false,
                     flag: false,
                     clicked: false,
@@ -132,21 +141,29 @@ function createGrid() {
                     });
     }
   }
-  spawnMines();
-  detectMines();
 }
 
-function spawnMines() {
+function spawnMines(x, y) {
   let placedMines = 0;
+
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows) {
+        grid[y + j][x + i].index = 0;
+      }
+    }
+  }
+
   while (placedMines < mines) {
     let x = Math.floor(random(cols));
     let y = Math.floor(random(rows));
-
-    if (!grid[y][x].mine) {
+    
+    if (!grid[y][x].mine && grid[y][x].index === undefined) {
       grid[y][x].mine = true;
       placedMines ++;
     }
   }
+  detectMines();
 }
 
 function detectMines() {
@@ -173,8 +190,12 @@ function displayGrid() {
   rectMode(CORNER);
   textAlign(CENTER, CENTER);
 
-  let gridWidth = cols*cellSize;
-  let gridHeight = rows*cellSize;
+  fill(0);
+  textSize(height/30);
+  text(`Mines: ${mines}\nFlags: ${flagCount}`, width/2, height/20);
+
+  gridWidth = cols*cellSize;
+  gridHeight = rows*cellSize;
 
   let startX = (width - gridWidth)/2;
   let startY = (height - gridHeight)/2;
@@ -197,7 +218,9 @@ function displayGrid() {
         else {
           fill(180);
           fill(0);
-          text(grid[y][x].index, gridX + cellSize/2, gridY + cellSize/2);
+          if (grid[y][x].index !== 0) {
+            text(grid[y][x].index, gridX + cellSize/2, gridY + cellSize/2);
+          }
         }
       }
       else {
@@ -206,6 +229,7 @@ function displayGrid() {
         square(gridX, gridY, cellSize);
         
         const SHADOW_THICKNESS = 20;
+        const CELL_SIZE_MODIFYER = 1.05;
 
         fill(255);
         noStroke();
@@ -213,27 +237,29 @@ function displayGrid() {
         rect(gridX, gridY, cellSize/SHADOW_THICKNESS, cellSize);
 
         fill(80);
-        rect(gridX + cellSize/1.05, gridY, cellSize/SHADOW_THICKNESS, cellSize);
-        rect(gridX, gridY + cellSize/1.05, cellSize, cellSize/SHADOW_THICKNESS);
+        rect(gridX + cellSize/CELL_SIZE_MODIFYER, gridY, cellSize/SHADOW_THICKNESS, cellSize);
+        rect(gridX, gridY + cellSize/CELL_SIZE_MODIFYER, cellSize, cellSize/SHADOW_THICKNESS);
+
+        if (grid[y][x].flag) {
+          image(flagImg, gridX, gridY, cellSize, cellSize);
+        }
       }
     }
   }
 }
 
+function gameOver() {
+  gameState = "Game Over";
+}
+
 // Used Gemini to give me Pseudocode on the logic for my floodFill function
 function floodFill(x, y) {
-  
-  if (x < 0 || x > cols || y < 0 || y > rows) {
-    return;
-  }
   if (grid[y][x].clicked) {
     return;
   }
   if (grid[y][x].mine) {
-    return;
-  }
-  if (grid[y][x].index !== 0) {
     grid[y][x].clicked = true;
+    gameOver();
     return;
   }
 
@@ -253,7 +279,7 @@ function floodFill(x, y) {
 }
 
 function mouseReleased() {
-  if (gameState === "menu" && mouseButton === LEFT) {
+  if (gameState === "menu") {
     for (let btn of buttons) {
       if (mouseIsInButton(btn)) {
         gameState = btn.label;
@@ -261,7 +287,19 @@ function mouseReleased() {
       }
     }
   }
-  else if (mouseButton === LEFT) {
+  else if (mouseButton === LEFT && firstClick) {
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (mouseIsInCell(x, y)) {
+          firstClick = false;
+          grid[y][x].index = 0;
+          spawnMines(x, y);
+          floodFill(x, y);
+        }
+      }
+    }
+  }
+  else if (mouseButton === LEFT && !firstClick) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
@@ -271,9 +309,18 @@ function mouseReleased() {
     }
   }
   else if (mouseButton === RIGHT) {
-    let cellX = Math.floor(mouseX % cols);
-    let cellY = Math.floor(mouseY % rows);
-
-    grid[cellY][cellX].flag = true;
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (mouseIsInCell(x, y)) {
+          grid[y][x].flag = !grid[y][x].flag;
+          if (grid[y][x].flag) {
+            flagCount ++;
+          }
+          else if (!grid[y][x].flag) {
+            flagCount --;
+          }
+        }
+      }
+    }
   }
 }
