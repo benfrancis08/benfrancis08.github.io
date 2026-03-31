@@ -51,16 +51,23 @@ function setup() {
   buttons = [
     {x: width/2, y:height/3, w: width/4, h: height/8, r: 20, label: "Easy"},
     {x: width/2, y:height/2, w: width/4, h: height/8, r: 20, label: "Medium"},
-    {x: width/2, y:height/1.5, w: width/4, h: height/8, r: 20, label: "Hard"}
+    {x: width/2, y:height/1.5, w: width/4, h: height/8, r: 20, label: "Hard"},
+    {x: width/2, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
   ];
 }
 
 function draw() {
   background(220);
+  if (gameState === "menu") {
   displayMenu();
-  if (gameState !== "menu") {
+  }
+  else {
     displayGrid();
   }
+  if (gameState === "Game Over") {
+    gameOver();
+  }
+  checkWin();
 }
 
 function displayMenu() {
@@ -69,7 +76,8 @@ function displayMenu() {
     textAlign(CENTER, CENTER);
     textSize(width/20);
     
-    for (let btn of buttons) {
+    for (let i = 0; i < buttons.length - 1; i++) {
+      let btn = buttons[i];
       if (mouseIsInButton(btn)) {
         fill(150);
         btn.w = width/4 + 25;
@@ -80,9 +88,11 @@ function displayMenu() {
         btn.w = width/4;
         btn.h = height/8;
       }
-
+      
+      stroke(5);
       rect(btn.x, btn.y, btn.w, btn.h, btn.r);
       fill(0);
+      noStroke();
       text(btn.label, btn.x, btn.y);
     }
   }
@@ -191,6 +201,7 @@ function displayGrid() {
   textAlign(CENTER, CENTER);
 
   fill(0);
+  noStroke();
   textSize(height/30);
   text(`Mines: ${mines}\nFlags: ${flagCount}`, width/2, height/20);
 
@@ -219,6 +230,7 @@ function displayGrid() {
           fill(180);
           fill(0);
           if (grid[y][x].index !== 0) {
+            noStroke();
             text(grid[y][x].index, gridX + cellSize/2, gridY + cellSize/2);
           }
         }
@@ -249,12 +261,58 @@ function displayGrid() {
 }
 
 function gameOver() {
-  gameState = "Game Over";
+  gameState = "Game Over"
+
+  fill(255, 0, 0, 200);
+  rectMode(CENTER);
+  rect(width/2, height/2, width, height);
+  
+  fill(0);
+  textSize(width/10);
+  text("GAME OVER", width/2, height/2);
+  
+  let btn = buttons[buttons.length - 1];
+  if (mouseIsInButton(btn)) {
+    fill(150);
+    btn.w = width/3 + 25;
+    btn.h = height/8 + 25;
+  }
+  else {
+    fill(255);
+    btn.w = width/3;
+    btn.h = height/8;
+  }
+  
+  stroke(5);
+  rect(btn.x, btn.y, btn.w, btn.h, btn.r);
+  
+  fill(0);
+  noStroke();
+  textSize(width/20);
+  text(btn.label, btn.x, btn.y);
+}
+
+function checkWin() {
+  let clickedCount = 0;
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      if (grid[y][x].clicked) {
+        clickedCount ++;
+      }
+    }
+  }
+  if (clickedCount === cols * rows - mines && gameState !== "Game Over") {
+    gameState = "win";
+    console.log(gameState);
+  }
 }
 
 // Used Gemini to give me Pseudocode on the logic for my floodFill function
 function floodFill(x, y) {
   if (grid[y][x].clicked) {
+    return;
+  }
+  if (grid[y][x].flag) {
     return;
   }
   if (grid[y][x].mine) {
@@ -280,11 +338,20 @@ function floodFill(x, y) {
 
 function mouseReleased() {
   if (gameState === "menu") {
-    for (let btn of buttons) {
+    for (let i = 0; i < buttons.length - 1; i++) {
+      let btn = buttons[i];
       if (mouseIsInButton(btn)) {
         gameState = btn.label;
         createGrid();
       }
+    }
+  }
+  else if (gameState === "Game Over") {
+    let btn = buttons[buttons.length - 1];
+    if (mouseIsInButton(btn)) {
+      gameState = "menu";
+      firstClick = true;
+      flagCount = 0;
     }
   }
   else if (mouseButton === LEFT && firstClick) {
