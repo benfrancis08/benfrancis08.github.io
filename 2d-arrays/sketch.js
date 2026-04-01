@@ -17,6 +17,8 @@ let cols;
 let buttons;
 let cellSize;
 let mines;
+let time;
+let finalTime;
 
 let flagImg;
 let mineImg;
@@ -52,14 +54,14 @@ function setup() {
     {x: width/2, y:height/3, w: width/4, h: height/8, r: 20, label: "Easy"},
     {x: width/2, y:height/2, w: width/4, h: height/8, r: 20, label: "Medium"},
     {x: width/2, y:height/1.5, w: width/4, h: height/8, r: 20, label: "Hard"},
-    {x: width/2, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
+    {x: width/2, y:height/2, w: width/3, h: height/8, r: 20, label: "Play Again"}
   ];
 }
 
 function draw() {
   background(220);
   if (gameState === "menu") {
-  displayMenu();
+    displayMenu();
   }
   else {
     displayGrid();
@@ -68,6 +70,7 @@ function draw() {
     gameOver();
   }
   checkWin();
+  displayWin();
 }
 
 function displayMenu() {
@@ -203,7 +206,20 @@ function displayGrid() {
   fill(0);
   noStroke();
   textSize(height/30);
-  text(`Mines: ${mines}\nFlags: ${flagCount}`, width/2, height/20);
+  text(`Mines: ${mines}\nFlags: ${flagCount}`, width/3, height/20);
+
+  let timerDisplay;
+  if (firstClick) {
+    timerDisplay = 0;
+  }
+  else if (gameState !== "Game Over" && gameState !== "Win") {
+    finalTime = ((millis() - time)/1000).toFixed(2);
+    timerDisplay = finalTime;
+  }
+  else {
+    timerDisplay = finalTime;
+  }
+  text(`Timer: ${timerDisplay}`, width/1.5, height/20);
 
   gridWidth = cols*cellSize;
   gridHeight = rows*cellSize;
@@ -261,7 +277,13 @@ function displayGrid() {
 }
 
 function gameOver() {
-  gameState = "Game Over"
+  gameState = "Game Over";
+
+  for (let x = 0; x < cols; x++) {
+    for (let y = 0; y < rows; y++) {
+      grid[y][x].clicked = true;
+    }
+  }
 
   fill(255, 0, 0, 200);
   rectMode(CENTER);
@@ -269,7 +291,7 @@ function gameOver() {
   
   fill(0);
   textSize(width/10);
-  text("GAME OVER", width/2, height/2);
+  text("GAME OVER", width/2, height/3);
   
   let btn = buttons[buttons.length - 1];
   if (mouseIsInButton(btn)) {
@@ -301,9 +323,40 @@ function checkWin() {
       }
     }
   }
-  if (clickedCount === cols * rows - mines && gameState !== "Game Over") {
-    gameState = "win";
-    console.log(gameState);
+  if (clickedCount === cols * rows - mines && gameState !== "menu") {
+    gameState = "Win";
+  }
+}
+
+function displayWin() {
+  if (gameState === "Win") {
+    rectMode(CENTER);
+    fill(0, 255, 0, 100);
+    noStroke();
+    rect(width/2, height/2, width, height);
+    
+    fill(0);
+    textSize(width/10);
+    text("WINNER!!", width/2, height/3);
+
+    let btn = buttons[buttons.length - 1];
+    if (mouseIsInButton(btn)) {
+      fill(150);
+      btn.w = width/3 + 25;
+      btn.h = height/8 + 25;
+    }
+    else {
+      fill(255);
+      btn.w = width/3;
+      btn.h = height/8;
+    }
+    stroke(5);
+    rect(btn.x, btn.y, btn.w, btn.h, btn.r);
+    
+    fill(0);
+    noStroke();
+    textSize(width/20);
+    text(btn.label, btn.x, btn.y);
   }
 }
 
@@ -346,7 +399,7 @@ function mouseReleased() {
       }
     }
   }
-  else if (gameState === "Game Over") {
+  else if (gameState === "Game Over" || gameState === "Win") {
     let btn = buttons[buttons.length - 1];
     if (mouseIsInButton(btn)) {
       gameState = "menu";
@@ -359,6 +412,7 @@ function mouseReleased() {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
           firstClick = false;
+          time = millis();
           grid[y][x].index = 0;
           spawnMines(x, y);
           floodFill(x, y);
@@ -375,10 +429,10 @@ function mouseReleased() {
       }
     }
   }
-  else if (mouseButton === RIGHT) {
+  else if (mouseButton === RIGHT && !firstClick) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
-        if (mouseIsInCell(x, y)) {
+        if (mouseIsInCell(x, y) && !grid[y][x].clicked) {
           grid[y][x].flag = !grid[y][x].flag;
           if (grid[y][x].flag) {
             flagCount ++;
