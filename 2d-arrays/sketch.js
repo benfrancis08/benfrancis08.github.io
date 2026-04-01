@@ -6,6 +6,7 @@
 // - describe what you did to take this project "above and beyond"
 
 let gameState = "menu";
+let scoreState;
 let firstClick = true;
 let flagCount = 0;
 
@@ -19,6 +20,10 @@ let cellSize;
 let mines;
 let time;
 let finalTime;
+let timerDisplay;
+let highScoreEasy;
+let highScoreMedium;
+let highScoreHard;
 
 let flagImg;
 let mineImg;
@@ -54,7 +59,7 @@ function setup() {
     {x: width/2, y:height/3, w: width/4, h: height/8, r: 20, label: "Easy"},
     {x: width/2, y:height/2, w: width/4, h: height/8, r: 20, label: "Medium"},
     {x: width/2, y:height/1.5, w: width/4, h: height/8, r: 20, label: "Hard"},
-    {x: width/2, y:height/2, w: width/3, h: height/8, r: 20, label: "Play Again"}
+    {x: width/2, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
   ];
 }
 
@@ -120,16 +125,19 @@ function createGrid() {
     rows = EASY_GRID.ROWS;
     cols = EASY_GRID.COLS;
     mines = EASY_GRID.MINES;
+    scoreState = "Easy";
   }
   else if (gameState === "Medium") {
     rows = MEDIUM_GRID.ROWS;
     cols = MEDIUM_GRID.COLS;
     mines = MEDIUM_GRID.MINES;
+    scoreState = "Medium";
   }
   else if (gameState === "Hard") {
     rows = HARD_GRID.ROWS;
     cols = HARD_GRID.COLS;
     mines = HARD_GRID.MINES;
+    scoreState = "Hard";
   }
 
   let cellSizeWidth = width/cols;
@@ -208,7 +216,6 @@ function displayGrid() {
   textSize(height/30);
   text(`Mines: ${mines}\nFlags: ${flagCount}`, width/3, height/20);
 
-  let timerDisplay;
   if (firstClick) {
     timerDisplay = 0;
   }
@@ -330,6 +337,11 @@ function checkWin() {
 
 function displayWin() {
   if (gameState === "Win") {
+    let highScore = getItem(`${scoreState}`);
+    if (timerDisplay < highScore || highScore === null) {
+      storeItem(`${scoreState}`, timerDisplay);
+    }
+
     rectMode(CENTER);
     fill(0, 255, 0, 100);
     noStroke();
@@ -338,6 +350,21 @@ function displayWin() {
     fill(0);
     textSize(width/10);
     text("WINNER!!", width/2, height/3);
+
+    textSize(width/20);
+    text(`Time:\n${finalTime}s`, width/3, height/2);
+    if (scoreState === "Easy") {
+      highScoreEasy = getItem("Easy");
+      text(`High Score:\n${highScoreEasy}s`, width/1.5, height/2);
+    }
+    else if (scoreState === "Medium") {
+      highScoreMedium = getItem("Medium");
+      text(`High Score:\n${highScoreMedium}s`, width/1.5, height/2);
+    }
+    else if (scoreState === "Hard") {
+      highScoreHard = getItem("Hard");
+      text(`High Score:\n${highScoreHard}s`, width/1.5, height/2);
+    }
 
     let btn = buttons[buttons.length - 1];
     if (mouseIsInButton(btn)) {
