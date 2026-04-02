@@ -43,6 +43,8 @@ const HARD_GRID = {
   COLS: 14,
   MINES: 30
 };
+const HALF = 2;
+const QUARTER = 4;
 
 function preload() {
   mineImg = loadImage("images/mine.png");
@@ -56,10 +58,10 @@ function setup() {
     element.addEventListener("contextmenu", (e) => e.preventDefault());
   }
   buttons = [
-    {x: width/2, y:height/3, w: width/4, h: height/8, r: 20, label: "Easy"},
-    {x: width/2, y:height/2, w: width/4, h: height/8, r: 20, label: "Medium"},
-    {x: width/2, y:height/1.5, w: width/4, h: height/8, r: 20, label: "Hard"},
-    {x: width/2, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
+    {x: width/HALF, y:height/3, w: width/QUARTER, h: height/8, r: 20, label: "Easy"},
+    {x: width/HALF, y:height/HALF, w: width/QUARTER, h: height/8, r: 20, label: "Medium"},
+    {x: width/HALF, y:height/1.5, w: width/QUARTER, h: height/8, r: 20, label: "Hard"},
+    {x: width/HALF, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
   ];
 }
 
@@ -82,14 +84,16 @@ function displayMenu() {
   if (gameState === "menu") {
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
-    textSize(width/20);
     
     for (let i = 0; i < buttons.length - 1; i++) {
       let btn = buttons[i];
       if (mouseIsInButton(btn)) {
         fill(150);
-        btn.w = width/4 + 25;
-        btn.h = height/8 + 25;
+        
+        const RESIZING_FACTOR = 25;
+        
+        btn.w = width/4 + RESIZING_FACTOR;
+        btn.h = height/8 + RESIZING_FACTOR;
       }
       else {
         fill(255);
@@ -100,6 +104,8 @@ function displayMenu() {
       stroke(5);
       rect(btn.x, btn.y, btn.w, btn.h, btn.r);
       fill(0);
+
+      textSize(width/20);
       noStroke();
       text(btn.label, btn.x, btn.y);
     }
@@ -153,13 +159,7 @@ function createGrid() {
   for (let y = 0; y < rows; y++) {
     grid.push([]);
     for (let x = 0; x < cols; x++) {
-      grid[y].push({index: undefined,
-                    mine: false,
-                    flag: false,
-                    clicked: false,
-                    x: 0,
-                    y: 0,
-                    });
+      grid[y].push({index: undefined, mine: false, flag: false, clicked: false, x: 0, y: 0});
     }
   }
 }
