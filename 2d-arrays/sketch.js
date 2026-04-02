@@ -295,6 +295,10 @@ function gameOver() {
   fill(255, 0, 0, 200);
   rectMode(CENTER);
   rect(width/2, height/2, width, height);
+
+  fill(255);
+  stroke(5);
+  rect(width/2, height/3, width/1.5, height/8, 20);
   
   fill(0);
   textSize(width/10);
@@ -347,10 +351,21 @@ function displayWin() {
     noStroke();
     rect(width/2, height/2, width, height);
     
+    
+    fill(255);
+    stroke(5);
+    rect(width/2, height/3, width/2, height/8, 20);
+    
     fill(0);
     textSize(width/10);
     text("WINNER!!", width/2, height/3);
-
+    
+    fill(255);
+    stroke(5);
+    rect(width/2, height/2, width/1.5, height/6, 20);
+    
+    fill(0);
+    noStroke();
     textSize(width/20);
     text(`Time:\n${finalTime}s`, width/3, height/2);
     if (scoreState === "Easy") {
