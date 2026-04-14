@@ -10,6 +10,7 @@
 - [Rectangualar Grid](07-rect-grid)
 - [Game of Life](08-life)
 - [Character in Grid](09-character)
+- [Walker OOP Demo](10-walker)
 
 ## Assignments
 - [Interactive Scene](interactive-scene)
