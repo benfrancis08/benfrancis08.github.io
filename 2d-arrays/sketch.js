@@ -449,23 +449,16 @@ function mouseReleased() {
       flagCount = 0;
     }
   }
-  else if (mouseButton === LEFT && firstClick) {
+  else if (mouseButton === LEFT) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
-          firstClick = false;
-          time = millis();
-          grid[y][x].index = 0;
-          spawnMines(x, y);
-          floodFill(x, y);
-        }
-      }
-    }
-  }
-  else if (mouseButton === LEFT && !firstClick) {
-    for (let x = 0; x < cols; x++) {
-      for (let y = 0; y < rows; y++) {
-        if (mouseIsInCell(x, y)) {
+          if (firstClick) {
+            firstClick = false;
+            time = millis();
+            grid[y][x].index = 0;
+            spawnMines(x, y);
+          }
           floodFill(x, y);
         }
       }
