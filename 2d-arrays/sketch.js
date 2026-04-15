@@ -5,11 +5,13 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
+// State/boolean variables used in project
 let gameState = "menu";
 let scoreState;
 let firstClick = true;
 let flagCount = 0;
 
+// Variables used in project
 let grid;
 let gridWidth;
 let gridHeight;
@@ -25,9 +27,11 @@ let highScoreEasy;
 let highScoreMedium;
 let highScoreHard;
 
+// Image variables used in project
 let flagImg;
 let mineImg;
 
+// Constants used in project
 const EASY_GRID = {
   ROWS: 10,
   COLS: 10,
@@ -43,30 +47,47 @@ const HARD_GRID = {
   COLS: 14,
   MINES: 30
 };
-const HALF = 2;
-const QUARTER = 4;
+const COLORS = {
+  LIGHT_GREY: 150,
+  DARK_GREY: 80,
+  BG: 220,
+  WHITE: 255,
+};
+const INDEX_COLORS = ["blue", "green", "red", "purple", "maroon", "teal", "black", "grey"];
+const GRID_SIZE_FACTOR = 0.8;
+const BUTTON_RADIUS = 20;
+const BUTTON_HEIGHT_FACTOR = 8;
+const BUTTON_WIDTH_FACTOR = 4;
+const BUTTON_INCREASE_ON_HOVER = 25;
+const STROKE_WEIGHT = 5;
+const SHADOW_THICKNESS = 20;
+const CELL_SIZE_MODIFYER = 1.05;
 
+// Built in preload funtion to load images used in project
 function preload() {
   mineImg = loadImage("images/mine.png");
   flagImg = loadImage("images/flag.png");
 }
 
+// Built in setup function to setup variables for projact
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // Found on stack overflow. Needed to disable right click menu in browser so I can use right click in project
   for (let element of document.getElementsByClassName("p5Canvas")) {
     element.addEventListener("contextmenu", (e) => e.preventDefault());
   }
+  // Button array stores button variables
   buttons = [
-    {x: width/HALF, y:height/3, w: width/QUARTER, h: height/8, r: 20, label: "Easy"},
-    {x: width/HALF, y:height/HALF, w: width/QUARTER, h: height/8, r: 20, label: "Medium"},
-    {x: width/HALF, y:height/1.5, w: width/QUARTER, h: height/8, r: 20, label: "Hard"},
-    {x: width/HALF, y:height/1.5, w: width/3, h: height/8, r: 20, label: "Play Again"}
+    {x: width/2, y:height/3, w: width/BUTTON_WIDTH_FACTOR, h: height/BUTTON_HEIGHT_FACTOR, r: BUTTON_RADIUS, label: "Easy"},
+    {x: width/2, y:height/2, w: width/BUTTON_WIDTH_FACTOR, h: height/BUTTON_HEIGHT_FACTOR, r: BUTTON_RADIUS, label: "Medium"},
+    {x: width/2, y:height/1.5, w: width/BUTTON_WIDTH_FACTOR, h: height/BUTTON_HEIGHT_FACTOR, r: BUTTON_RADIUS, label: "Hard"},
+    {x: width/2, y:height/1.5, w: width/3, h: height/BUTTON_HEIGHT_FACTOR, r: BUTTON_RADIUS, label: "Play Again"}
   ];
 }
 
+// Built in draw function draws main function to canvas
 function draw() {
-  background(220);
+  background(COLORS.BG);
   if (gameState === "menu") {
     displayMenu();
   }
@@ -80,38 +101,45 @@ function draw() {
   displayWin();
 }
 
+// displayMenu functon displays 3 buttons easy, medium, and hard that change size and color when mouse button hovers over
 function displayMenu() {
   if (gameState === "menu") {
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
     
+    // Goes through button array one by one excluding play again button and displays on canvas
     for (let i = 0; i < buttons.length - 1; i++) {
       let btn = buttons[i];
+      // Recolors and resized button when mouse hovered over
       if (mouseIsInButton(btn)) {
-        fill(150);
+        fill(COLORS.LIGHT_GREY);
         
-        const RESIZING_FACTOR = 25;
         
-        btn.w = width/4 + RESIZING_FACTOR;
-        btn.h = height/8 + RESIZING_FACTOR;
+        btn.w = width/BUTTON_WIDTH_FACTOR + BUTTON_INCREASE_ON_HOVER;
+        btn.h = height/BUTTON_HEIGHT_FACTOR + BUTTON_INCREASE_ON_HOVER;
       }
       else {
         fill(255);
-        btn.w = width/4;
-        btn.h = height/8;
+        btn.w = width/BUTTON_WIDTH_FACTOR;
+        btn.h = height/BUTTON_HEIGHT_FACTOR;
       }
       
-      stroke(5);
+      // Displays button
+      stroke(STROKE_WEIGHT);
       rect(btn.x, btn.y, btn.w, btn.h, btn.r);
       fill(0);
 
-      textSize(width/20);
+      const TEXT_SIZE_FACTOR = 20;
+
+      // Displays button label in center of button
+      textSize(width/TEXT_SIZE_FACTOR);
       noStroke();
       text(btn.label, btn.x, btn.y);
     }
   }
 }
 
+// mouseIsInButton function returns true or false if mouse is in button or not
 function mouseIsInButton(btn) {
   return mouseX > btn.x - btn.w/2 &&
          mouseX < btn.x + btn.w/2 &&
@@ -119,6 +147,7 @@ function mouseIsInButton(btn) {
          mouseY < btn.y + btn.h/2;
 }
 
+// mouseIsInCell function returns true or false if mouse is in cell or not
 function mouseIsInCell(x, y) {
   return mouseX > grid[y][x].x &&
          mouseX < grid[y][x].x + cellSize &&
@@ -148,11 +177,12 @@ function createGrid() {
 
   let cellSizeWidth = width/cols;
   let cellSizeHeight = height/rows;
+
   if (cellSizeWidth > cellSizeHeight) {
-    cellSize = Math.floor(cellSizeHeight)*0.8;
+    cellSize = Math.floor(cellSizeHeight)*GRID_SIZE_FACTOR;
   }
   else {
-    cellSize = Math.floor(cellSizeWidth)*0.8;
+    cellSize = Math.floor(cellSizeWidth)*GRID_SIZE_FACTOR;
   }
 
   grid = [];
@@ -197,7 +227,7 @@ function detectMines() {
           
           if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows && !grid[y][x].mine) {
             if (grid[y + j][x + i].mine) {
-              count += 1;
+              count ++;
             }
             grid[y][x].index = count;
           }
@@ -211,9 +241,11 @@ function displayGrid() {
   rectMode(CORNER);
   textAlign(CENTER, CENTER);
 
+  const TEXT_SIZE_FACTOR = 30;
+
   fill(0);
   noStroke();
-  textSize(height/30);
+  textSize(height/TEXT_SIZE_FACTOR);
   text(`Mines: ${mines}\nFlags: ${flagCount}`, width/3, height/20);
 
   if (firstClick) {
@@ -243,7 +275,7 @@ function displayGrid() {
       grid[y][x].y = gridY;
 
       if (grid[y][x].clicked) {
-        stroke(5);
+        stroke(STROKE_WEIGHT);
         fill(255);
         square(gridX, gridY, cellSize);
         if (grid[y][x].mine) {
@@ -254,24 +286,23 @@ function displayGrid() {
           fill(0);
           if (grid[y][x].index !== 0) {
             noStroke();
+            fill(INDEX_COLORS[grid[y][x].index - 1]);
             text(grid[y][x].index, gridX + cellSize/2, gridY + cellSize/2);
           }
         }
       }
       else {
-        fill(150);
-        stroke(5);
+        fill(COLORS.LIGHT_GREY);
+        stroke(STROKE_WEIGHT);
         square(gridX, gridY, cellSize);
         
-        const SHADOW_THICKNESS = 20;
-        const CELL_SIZE_MODIFYER = 1.05;
 
         fill(255);
         noStroke();
         rect(gridX, gridY, cellSize, cellSize/SHADOW_THICKNESS);
         rect(gridX, gridY, cellSize/SHADOW_THICKNESS, cellSize);
 
-        fill(80);
+        fill(COLORS.DARK_GREY);
         rect(gridX + cellSize/CELL_SIZE_MODIFYER, gridY, cellSize/SHADOW_THICKNESS, cellSize);
         rect(gridX, gridY + cellSize/CELL_SIZE_MODIFYER, cellSize, cellSize/SHADOW_THICKNESS);
 
@@ -297,8 +328,8 @@ function gameOver() {
   rect(width/2, height/2, width, height);
 
   fill(255);
-  stroke(5);
-  rect(width/2, height/3, width/1.5, height/8, 20);
+  stroke(STROKE_WEIGHT);
+  rect(width/2, height/3, width/1.5, height/8, BUTTON_RADIUS);
   
   fill(0);
   textSize(width/10);
@@ -306,9 +337,9 @@ function gameOver() {
   
   let btn = buttons[buttons.length - 1];
   if (mouseIsInButton(btn)) {
-    fill(150);
-    btn.w = width/3 + 25;
-    btn.h = height/8 + 25;
+    fill(COLORS.LIGHT_GREY);
+    btn.w = width/3 + BUTTON_INCREASE_ON_HOVER;
+    btn.h = height/8 + BUTTON_INCREASE_ON_HOVER;
   }
   else {
     fill(255);
@@ -316,7 +347,7 @@ function gameOver() {
     btn.h = height/8;
   }
   
-  stroke(5);
+  stroke(STROKE_WEIGHT);
   rect(btn.x, btn.y, btn.w, btn.h, btn.r);
   
   fill(0);
@@ -353,16 +384,16 @@ function displayWin() {
     
     
     fill(255);
-    stroke(5);
-    rect(width/2, height/3, width/2, height/8, 20);
+    stroke(STROKE_WEIGHT);
+    rect(width/2, height/3, width/2, height/8, BUTTON_RADIUS);
     
     fill(0);
     textSize(width/10);
     text("WINNER!!", width/2, height/3);
     
     fill(255);
-    stroke(5);
-    rect(width/2, height/2, width/1.5, height/6, 20);
+    stroke(STROKE_WEIGHT);
+    rect(width/2, height/2, width/1.5, height/6, BUTTON_RADIUS);
     
     fill(0);
     noStroke();
@@ -383,16 +414,16 @@ function displayWin() {
 
     let btn = buttons[buttons.length - 1];
     if (mouseIsInButton(btn)) {
-      fill(150);
-      btn.w = width/3 + 25;
-      btn.h = height/8 + 25;
+      fill(COLORS.LIGHT_GREY);
+      btn.w = width/3 + BUTTON_INCREASE_ON_HOVER;
+      btn.h = height/8 + BUTTON_INCREASE_ON_HOVER;
     }
     else {
       fill(255);
       btn.w = width/3;
       btn.h = height/8;
     }
-    stroke(5);
+    stroke(STROKE_WEIGHT);
     rect(btn.x, btn.y, btn.w, btn.h, btn.r);
     
     fill(0);
