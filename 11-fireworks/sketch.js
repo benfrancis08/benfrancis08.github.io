@@ -27,6 +27,10 @@ class Particle {
     // Fade away over time
     this.opacity --;
   }
+
+  isDead() {
+    return this.opacity <= 0;
+  }
 }
 
 let theFireworks = [];
@@ -39,8 +43,14 @@ function setup() {
 function draw() {
   background(0);
   for (let aFirework of theFireworks) {
-    aFirework.update();
-    aFirework.display();
+    if (aFirework.isDead()) {
+      let index = theFireworks.indexOf(aFirework);
+      theFireworks.splice(index, 1);
+    }
+    else {
+      aFirework.update();
+      aFirework.display();
+    }
   }
 }
 
