@@ -1,9 +1,13 @@
 // 2d Arrays Project
 // Ben Francis
-// Date
+// April 15 2026
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - Explored recursion through a floodfill function to uncover all "0's" in my minesweeper project
+// - Explored disabling the right click menu in browser so right click can be used in project
+// - Explored local storage through store and get functions to save high scores to browser
+// - Explored having a safe first click so that there is no possibility of clicking a mine on the first press
+// - Explored making project look 🌟pretty🌟 using different rectangles and stroke sizes to create shadows and a 3d affect
 
 // State/boolean variables used in project
 let gameState = "menu";
@@ -139,7 +143,7 @@ function displayMenu() {
   }
 }
 
-// mouseIsInButton function returns true or false if mouse is in button or not
+// mouseIsInButton function returns true or false if mouse is in button or not given btn
 function mouseIsInButton(btn) {
   return mouseX > btn.x - btn.w/2 &&
          mouseX < btn.x + btn.w/2 &&
@@ -147,7 +151,7 @@ function mouseIsInButton(btn) {
          mouseY < btn.y + btn.h/2;
 }
 
-// mouseIsInCell function returns true or false if mouse is in cell or not
+// mouseIsInCell function returns true or false if mouse is in cell or not given x and y of cell
 function mouseIsInCell(x, y) {
   return mouseX > grid[y][x].x &&
          mouseX < grid[y][x].x + cellSize &&
@@ -155,6 +159,7 @@ function mouseIsInCell(x, y) {
          mouseY < grid[y][x].y + cellSize;
 }
 
+// createGrid function creates the main grid for the project changing the size based on the gameState
 function createGrid() {
   if (gameState === "Easy") {
     rows = EASY_GRID.ROWS;
@@ -194,9 +199,11 @@ function createGrid() {
   }
 }
 
+// spawnMines function spawns mines on the grid in a random x and y
 function spawnMines(x, y) {
   let placedMines = 0;
 
+  // Creates a 3x3 "safe zone" around the first click
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
       if (x+i >= 0 && x+i < cols && y+j >= 0 && y+j < rows) {
@@ -205,10 +212,12 @@ function spawnMines(x, y) {
     }
   }
 
+  // Spawns mines until placedMines matches set amount of mines for each difficulty
   while (placedMines < mines) {
     let x = Math.floor(random(cols));
     let y = Math.floor(random(rows));
     
+    // Makes sure that mines are not spawned on a spot with a mine or in a 3x3 around the first click
     if (!grid[y][x].mine && grid[y][x].index === undefined) {
       grid[y][x].mine = true;
       placedMines ++;
@@ -217,6 +226,7 @@ function spawnMines(x, y) {
   detectMines();
 }
 
+// detectMines function goes through grid and sets index value based on how many mines touching
 function detectMines() {
   for (let x = 0; x < cols; x++) {
     for (let y = 0; y < rows; y++) {
@@ -237,17 +247,20 @@ function detectMines() {
   }
 }
 
+// displayGrid function displays the grid on screen
 function displayGrid() {
   rectMode(CORNER);
   textAlign(CENTER, CENTER);
 
   const TEXT_SIZE_FACTOR = 30;
 
+  // Displays how many mines and how many flags are placed
   fill(0);
   noStroke();
   textSize(height/TEXT_SIZE_FACTOR);
   text(`Mines: ${mines}\nFlags: ${flagCount}`, width/3, height/20);
 
+  // Displays timer while game is running and stops it when game over on win
   if (firstClick) {
     timerDisplay = 0;
   }
@@ -274,6 +287,7 @@ function displayGrid() {
       grid[y][x].x = gridX;
       grid[y][x].y = gridY;
 
+      // If cell clicked display either nothing, index, or mineImg
       if (grid[y][x].clicked) {
         stroke(STROKE_WEIGHT);
         fill(255);
@@ -291,6 +305,7 @@ function displayGrid() {
           }
         }
       }
+      // Else display grey cell with shadow to have better immersion
       else {
         fill(COLORS.LIGHT_GREY);
         stroke(STROKE_WEIGHT);
@@ -314,6 +329,7 @@ function displayGrid() {
   }
 }
 
+// gameOver screen displays the game over menu with a red tint and play again button
 function gameOver() {
   gameState = "Game Over";
 
@@ -356,6 +372,7 @@ function gameOver() {
   text(btn.label, btn.x, btn.y);
 }
 
+// Check win function cycles through grid checking if all non mine cells are clicked
 function checkWin() {
   let clickedCount = 0;
   for (let x = 0; x < cols; x++) {
@@ -365,11 +382,13 @@ function checkWin() {
       }
     }
   }
+  // Sets gameState to "Win" if win is present
   if (clickedCount === cols * rows - mines && gameState !== "menu") {
     gameState = "Win";
   }
 }
 
+// displayWin screen displays the win menu with a green tint and play again button with current time and best time
 function displayWin() {
   if (gameState === "Win") {
     let highScore = getItem(`${scoreState}`);
@@ -462,7 +481,9 @@ function floodFill(x, y) {
   }
 }
 
+// Built in mouseReleased function runs when a mouse button is clicked then released
 function mouseReleased() {
+  // Checks if difficulty select buttons are clicked and sets gameState to whatever was clicked
   if (gameState === "menu") {
     for (let i = 0; i < buttons.length - 1; i++) {
       let btn = buttons[i];
@@ -472,6 +493,7 @@ function mouseReleased() {
       }
     }
   }
+  // Checks if play again button is clicked during gameOver or win screen is active
   else if (gameState === "Game Over" || gameState === "Win") {
     let btn = buttons[buttons.length - 1];
     if (mouseIsInButton(btn)) {
@@ -480,21 +502,25 @@ function mouseReleased() {
       flagCount = 0;
     }
   }
+  // Checks if LMB is clicked on a cell
   else if (mouseButton === LEFT) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
         if (mouseIsInCell(x, y)) {
+          // If it is the first click setup mines so its not possible to click a mine on the first click
           if (firstClick) {
             firstClick = false;
             time = millis();
             grid[y][x].index = 0;
             spawnMines(x, y);
           }
+          // Runs the floodfill function to uncover all "0's" if clicked else just display the one cell
           floodFill(x, y);
         }
       }
     }
   }
+  // Checks if RMB is clicked and not first click set a flag or remove flag
   else if (mouseButton === RIGHT && !firstClick) {
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
