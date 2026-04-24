@@ -12,7 +12,9 @@
 - [Character in Grid](09-character)
 - [Walker OOP Demo](10-walker)
 - [Fireworks OOP Demo](11-fireworks)
-- [Ball cCollision OOP](12-ball-oop)
+- [Ball Collision OOP](12-ball-oop)
+- [OOP Nodes](13-nodes)
+- [Inheritance OOP](14-inheritance)
 
 ## Assignments
 - [Interactive Scene](interactive-scene)
